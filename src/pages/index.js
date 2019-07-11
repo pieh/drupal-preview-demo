@@ -1,21 +1,60 @@
 import React from "react"
-import { Link } from "gatsby"
+import { graphql } from "gatsby"
 
 import Layout from "../components/layout"
-import Image from "../components/image"
 import SEO from "../components/seo"
 
-const IndexPage = () => (
+const IndexPage = ({ data }) => (
   <Layout>
     <SEO title="Home" />
-    <h1>Hi people</h1>
-    <p>Welcome to your new Gatsby site.</p>
-    <p>Now go build something great.</p>
-    <div style={{ maxWidth: `300px`, marginBottom: `1.45rem` }}>
-      <Image />
-    </div>
-    <Link to="/page-2/">Go to page 2</Link>
+    <h1>Recipes</h1>
+    <ul>
+      {data.allNodeRecipe.nodes.map(
+        ({
+          id,
+          title,
+          field_summary: { processed },
+          relationships: { node__article },
+        }) => {
+          return (
+            <li key={id}>
+              <h2>{title}</h2>
+              <div dangerouslySetInnerHTML={{ __html: processed }} />
+              {node__article && node__article.length > 0 && (
+                <React.Fragment>
+                  <h4>Referenced By</h4>
+                  <ul>
+                    {node__article.map(({ title }) => {
+                      return <li>{title}</li>
+                    })}
+                  </ul>
+                </React.Fragment>
+              )}
+            </li>
+          )
+        }
+      )}
+    </ul>
   </Layout>
 )
 
 export default IndexPage
+
+export const q = graphql`
+  {
+    allNodeRecipe {
+      nodes {
+        id
+        title
+        field_summary {
+          processed
+        }
+        relationships {
+          node__article {
+            title
+          }
+        }
+      }
+    }
+  }
+`
